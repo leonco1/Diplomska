@@ -41,6 +41,11 @@ interface Props {
   onSample?: (sample: TrackedSample) => void;
   /** Label for the toggle button (defaults to the generic tracking copy). */
   startLabel?: string;
+  /**
+   * Whether to render the live/summary charts. The Watch page records silently
+   * (charts live on the Emotion dashboard instead), so it passes false.
+   */
+  showCharts?: boolean;
 }
 
 /**
@@ -48,7 +53,11 @@ interface Props {
  * seconds, sends it to /emotion/face, and shows the viewer's current emotion.
  * Everything stops and the camera is released when disabled or unmounted.
  */
-export default function EmotionTracker({ onSample, startLabel }: Props = {}) {
+export default function EmotionTracker({
+  onSample,
+  startLabel,
+  showCharts = true,
+}: Props = {}) {
   const [enabled, setEnabled] = useState(false);
   const [current, setCurrent] = useState<EmotionScore | null>(null);
   const [breakdown, setBreakdown] = useState<EmotionScore[]>([]);
@@ -191,13 +200,13 @@ export default function EmotionTracker({ onSample, startLabel }: Props = {}) {
         style={{ display: enabled ? 'block' : 'none' }}
       />
       {/* While tracking we only collect; the charts appear once it's stopped. */}
-      {enabled && history.length > 0 && (
+      {showCharts && enabled && history.length > 0 && (
         <p className="muted emotion-collecting">
           Collecting… {history.length} sample{history.length === 1 ? '' : 's'} so
           far. Stop tracking to see the summary.
         </p>
       )}
-      {!enabled && history.length > 0 && (
+      {showCharts && !enabled && history.length > 0 && (
         <EmotionCharts
           history={history}
           emotionKeys={emotionKeys}

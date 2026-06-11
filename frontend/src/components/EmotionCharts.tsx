@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -6,6 +5,7 @@ import {
   BarChart,
   Bar,
   Cell,
+  LabelList,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -32,8 +32,65 @@ const COLORS: Record<string, string> = {
   disgust: '#34d399',
   neutral: '#9ca3af',
 };
-const colorFor = (emotion: string) => COLORS[emotion] ?? '#cbd5e1';
+export const colorFor = (emotion: string) => COLORS[emotion] ?? '#cbd5e1';
 const fmtPct = (v: number) => `${Math.round(v * 100)}%`;
+
+/**
+ * Horizontal bar chart of a set of emotion scores (each 0–1). Reused for the
+ * "latest frame" breakdown, per-video distributions, and the lifetime mix.
+ */
+export function EmotionBars({
+  data,
+  title,
+}: {
+  data: EmotionScore[];
+  title: string;
+}) {
+  if (data.length === 0) return null;
+  return (
+    <div className="emotion-chart-card">
+      <h4>{title}</h4>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart
+          layout="vertical"
+          data={data}
+          margin={{ top: 8, right: 48, bottom: 4, left: 8 }}
+        >
+          <CartesianGrid stroke="#2a2e3c" strokeDasharray="3 3" horizontal={false} />
+          <XAxis
+            type="number"
+            domain={[0, 1]}
+            tickFormatter={fmtPct}
+            stroke="#9ca3af"
+            fontSize={12}
+          />
+          <YAxis
+            type="category"
+            dataKey="emotion"
+            width={72}
+            stroke="#9ca3af"
+            fontSize={12}
+            tickFormatter={(s: string) => s.charAt(0).toUpperCase() + s.slice(1)}
+          />
+          <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+            {data.map((b) => (
+              <Cell key={b.emotion} fill={colorFor(b.emotion)} />
+            ))}
+            {/* Always-on value labels so scores are readable without hovering. */}
+            <LabelList
+              dataKey="score"
+              position="right"
+              formatter={(v) => fmtPct(Number(v))}
+              fill="#e8eaf1"
+              fontSize={12}
+              fontWeight={600}
+            />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 interface Props {
   /** Time-series of emotion scores collected over the session. */
@@ -42,6 +99,8 @@ interface Props {
   emotionKeys: string[];
   /** Scores from the most recent frame, sorted high → low. */
   breakdown: EmotionScore[];
+  /** Title for the bar-chart card (defaults to the live "Latest frame" copy). */
+  breakdownTitle?: string;
 }
 
 /**
@@ -49,12 +108,12 @@ interface Props {
  *  - a live timeline (one line per emotion) showing the emotional arc, and
  *  - a bar chart of the latest frame's full score distribution.
  */
-export default function EmotionCharts({ history, emotionKeys, breakdown }: Props) {
-  const bars = useMemo(
-    () => breakdown.map((e) => ({ emotion: e.emotion, score: e.score })),
-    [breakdown],
-  );
-
+export default function EmotionCharts({
+  history,
+  emotionKeys,
+  breakdown,
+  breakdownTitle = 'Latest frame',
+}: Props) {
   if (history.length === 0) return null;
 
   return (
@@ -101,43 +160,7 @@ export default function EmotionCharts({ history, emotionKeys, breakdown }: Props
         </ResponsiveContainer>
       </div>
 
-      <div className="emotion-chart-card">
-        <h4>Latest frame</h4>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart
-            layout="vertical"
-            data={bars}
-            margin={{ top: 8, right: 36, bottom: 4, left: 8 }}
-          >
-            <CartesianGrid stroke="#2a2e3c" strokeDasharray="3 3" horizontal={false} />
-            <XAxis
-              type="number"
-              domain={[0, 1]}
-              tickFormatter={fmtPct}
-              stroke="#9ca3af"
-              fontSize={12}
-            />
-            <YAxis
-              type="category"
-              dataKey="emotion"
-              width={72}
-              stroke="#9ca3af"
-              fontSize={12}
-              tickFormatter={(s: string) => s.charAt(0).toUpperCase() + s.slice(1)}
-            />
-            <Tooltip
-              cursor={{ fill: '#ffffff10' }}
-              contentStyle={{ background: '#1b1e27', border: '1px solid #2a2e3c' }}
-              formatter={(v) => [fmtPct(Number(v)), 'score']}
-            />
-            <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-              {bars.map((b) => (
-                <Cell key={b.emotion} fill={colorFor(b.emotion)} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <EmotionBars data={breakdown} title={breakdownTitle} />
     </div>
   );
 }

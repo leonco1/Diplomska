@@ -21,7 +21,10 @@ const ISSUER =
 const JWKS_URI =
   process.env.KEYCLOAK_JWKS_URI ||
   `${ISSUER}/protocol/openid-connect/certs`;
-const AUDIENCE = process.env.KEYCLOAK_AUDIENCE || 'account';
+// Optional. Keycloak's default access tokens for a public SPA client carry no
+// `aud` claim, so audience validation is off unless KEYCLOAK_AUDIENCE is set
+// (e.g. after adding an audience mapper). Signature + issuer are always checked.
+const AUDIENCE = process.env.KEYCLOAK_AUDIENCE?.trim();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -36,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         jwksUri: JWKS_URI,
       }),
       issuer: ISSUER,
-      audience: AUDIENCE,
+      ...(AUDIENCE ? { audience: AUDIENCE } : {}),
       algorithms: ['RS256'],
     });
   }

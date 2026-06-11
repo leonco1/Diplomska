@@ -19,6 +19,21 @@ export interface VideoEmotionStats {
   aggregate: EmotionAggregate[];
 }
 
+/** One watched video's emotion summary (video metadata + its timeline/aggregate). */
+export interface VideoEmotionSummary {
+  video: Video;
+  sampleCount: number;
+  samples: EmotionSample[];
+  aggregate: EmotionAggregate[];
+}
+
+/** Everything the Emotion dashboard needs: per-video stats + a lifetime roll-up. */
+export interface EmotionOverview {
+  totalSamples: number;
+  lifetime: EmotionAggregate[];
+  perVideo: VideoEmotionSummary[];
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -123,8 +138,52 @@ export class UsersService {
       where: { user: { id: user.id }, video: { id: videoId } },
       order: { tSeconds: 'ASC', createdAt: 'ASC' },
     });
+    return {
+      videoId,
+      sampleCount: samples.length,
+      samples,
+      aggregate: this.aggregate(samples),
+    };
+  }
 
-    // Average the dominant score per dominant emotion.
+  /**
+   * Emotion dashboard data for a user: a per-emotion roll-up for each video
+   * they recorded reactions to, plus a lifetime roll-up across every sample.
+   */
+  async getEmotionOverview(user: User): Promise<EmotionOverview> {
+    const samples = await this.samples.find({
+      where: { user: { id: user.id } },
+      relations: { video: true },
+      order: { tSeconds: 'ASC', createdAt: 'ASC' },
+    });
+
+    // Group the flat sample list by the video it was captured against.
+    const byVideo = new Map<string, EmotionSample[]>();
+    for (const s of samples) {
+      if (!s.video) continue;
+      const list = byVideo.get(s.video.id) ?? [];
+      list.push(s);
+      byVideo.set(s.video.id, list);
+    }
+
+    const perVideo: VideoEmotionSummary[] = [...byVideo.values()]
+      .map((list) => ({
+        video: list[0].video,
+        sampleCount: list.length,
+        samples: list,
+        aggregate: this.aggregate(list),
+      }))
+      .sort((a, b) => b.sampleCount - a.sampleCount);
+
+    return {
+      totalSamples: samples.length,
+      lifetime: this.aggregate(samples),
+      perVideo,
+    };
+  }
+
+  /** Average the dominant score per dominant emotion, most frequent first. */
+  private aggregate(samples: EmotionSample[]): EmotionAggregate[] {
     const totals = new Map<string, { sum: number; count: number }>();
     for (const s of samples) {
       const t = totals.get(s.dominantEmotion) ?? { sum: 0, count: 0 };
@@ -132,14 +191,12 @@ export class UsersService {
       t.count += 1;
       totals.set(s.dominantEmotion, t);
     }
-    const aggregate: EmotionAggregate[] = [...totals.entries()]
+    return [...totals.entries()]
       .map(([emotion, { sum, count }]) => ({
         emotion,
         averageScore: count ? sum / count : 0,
         count,
       }))
       .sort((a, b) => b.count - a.count);
-
-    return { videoId, sampleCount: samples.length, samples, aggregate };
   }
 }

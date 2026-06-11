@@ -68,12 +68,14 @@ export default function WatchPage() {
         <h2>Track your reaction</h2>
         <p className="muted">
           Enable your camera to record how you feel while watching. Readings are
-          saved to your watch history.
+          saved and visualised on the{' '}
+          <Link to="/emotion">Emotion</Link> page.
           {saved > 0 && ` (${saved} saved)`}
         </p>
         <EmotionTracker
           onSample={handleSample}
           startLabel="🎥 Track my reaction to this video"
+          showCharts={false}
         />
       </section>
     </div>

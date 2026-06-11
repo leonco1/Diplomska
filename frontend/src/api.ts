@@ -63,6 +63,19 @@ export interface VideoEmotionStats {
   aggregate: EmotionAggregate[];
 }
 
+export interface VideoEmotionSummary {
+  video: Video;
+  sampleCount: number;
+  samples: EmotionSampleRecord[];
+  aggregate: EmotionAggregate[];
+}
+
+export interface EmotionOverview {
+  totalSamples: number;
+  lifetime: EmotionAggregate[];
+  perVideo: VideoEmotionSummary[];
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -265,5 +278,12 @@ export async function getVideoEmotionStats(
 ): Promise<VideoEmotionStats> {
   const res = await authFetch(`/me/videos/${videoId}/emotions`);
   if (!res.ok) throw new Error('Failed to load emotion stats');
+  return res.json();
+}
+
+/** Per-video + lifetime emotion roll-up for the Emotion dashboard. */
+export async function getEmotionOverview(): Promise<EmotionOverview> {
+  const res = await authFetch('/me/emotions');
+  if (!res.ok) throw new Error('Failed to load emotion overview');
   return res.json();
 }

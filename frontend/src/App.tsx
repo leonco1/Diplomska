@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import UploadPage from './pages/UploadPage';
 import WatchPage from './pages/WatchPage';
@@ -18,10 +18,12 @@ export default function App() {
           🎬 StreamApp
         </Link>
         <nav>
-          <Link to="/">Browse</Link>
-          <Link to="/history">History</Link>
-          {isAdmin && <Link to="/upload">Upload</Link>}
-          <Link to="/emotion">Emotion</Link>
+          <NavLink to="/" end>
+            Browse
+          </NavLink>
+          <NavLink to="/history">History</NavLink>
+          {isAdmin && <NavLink to="/upload">Upload</NavLink>}
+          <NavLink to="/emotion">Emotion</NavLink>
         </nav>
         {authenticated && (
           <div className="user-box">

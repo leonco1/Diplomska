@@ -45,6 +45,12 @@ export class UsersController {
     return this.users.saveEmotionSample(user, dto);
   }
 
+  /** Per-video + lifetime emotion roll-up for the Emotion dashboard. */
+  @Get('emotions')
+  emotions(@CurrentUser('user') user: AuthUser['user']) {
+    return this.users.getEmotionOverview(user);
+  }
+
   @Get('videos/:videoId/emotions')
   videoEmotions(
     @CurrentUser('user') user: AuthUser['user'],
