@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { mkdirSync } from 'fs';
 import { AppModule } from './app.module';
 import { UPLOAD_DIR } from './videos/videos.service';
@@ -9,9 +10,10 @@ async function bootstrap() {
   mkdirSync(UPLOAD_DIR, { recursive: true });
 
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
 
   app.enableCors({
-    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    origin: config.get<string>('FRONTEND_ORIGIN') || 'http://localhost:5173',
   });
 
   app.useGlobalPipes(
@@ -21,10 +23,9 @@ async function bootstrap() {
     }),
   );
 
-  const port = Number(process.env.PORT ?? 3000);
+  const port = Number(config.get<string>('PORT') ?? 3000);
   await app.listen(port);
-  // eslint-disable-next-line no-console
-  console.log(`Backend running on http://localhost:${port}`);
+  Logger.log(`Backend running on http://localhost:${port}`, 'Bootstrap');
 }
 
-bootstrap();
+void bootstrap();

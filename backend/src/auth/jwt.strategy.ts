@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
@@ -16,19 +17,23 @@ interface KeycloakJwtPayload {
   realm_access?: { roles?: string[] };
 }
 
-const ISSUER =
-  process.env.KEYCLOAK_ISSUER || 'http://localhost:8080/realms/streamapp';
-const JWKS_URI =
-  process.env.KEYCLOAK_JWKS_URI ||
-  `${ISSUER}/protocol/openid-connect/certs`;
-// Optional. Keycloak's default access tokens for a public SPA client carry no
-// `aud` claim, so audience validation is off unless KEYCLOAK_AUDIENCE is set
-// (e.g. after adding an audience mapper). Signature + issuer are always checked.
-const AUDIENCE = process.env.KEYCLOAK_AUDIENCE?.trim();
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly users: UsersService) {
+  constructor(
+    config: ConfigService,
+    private readonly users: UsersService,
+  ) {
+    const issuer =
+      config.get<string>('KEYCLOAK_ISSUER') ||
+      'http://localhost:8080/realms/streamapp';
+    const jwksUri =
+      config.get<string>('KEYCLOAK_JWKS_URI') ||
+      `${issuer}/protocol/openid-connect/certs`;
+    // Optional. Keycloak's default access tokens for a public SPA client carry no
+    // `aud` claim, so audience validation is off unless KEYCLOAK_AUDIENCE is set
+    // (e.g. after adding an audience mapper). Signature + issuer are always checked.
+    const audience = config.get<string>('KEYCLOAK_AUDIENCE')?.trim();
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       // Fetch + cache Keycloak's signing keys (JWKS) to verify token signatures.
@@ -36,10 +41,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 10,
-        jwksUri: JWKS_URI,
+        jwksUri,
       }),
-      issuer: ISSUER,
-      ...(AUDIENCE ? { audience: AUDIENCE } : {}),
+      issuer,
+      ...(audience ? { audience } : {}),
       algorithms: ['RS256'],
     });
   }

@@ -47,9 +47,7 @@ export class VideosService {
 
   async remove(id: string) {
     const video = await this.findOne(id);
-    await fs
-      .unlink(join(UPLOAD_DIR, video.filename))
-      .catch(() => undefined); // ignore missing file on disk
+    await fs.unlink(join(UPLOAD_DIR, video.filename)).catch(() => undefined); // ignore missing file on disk
     await this.videos.delete({ id });
     return { deleted: true };
   }

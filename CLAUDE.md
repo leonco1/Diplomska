@@ -13,15 +13,19 @@ npm run db:up          # Start PostgreSQL (docker compose up -d)
 npm run start:dev      # Dev server with watch
 npm run build          # nest build → dist/
 npm run start:prod     # node dist/main
+npm run lint           # ESLint (eslint.config.mjs, flat config)
+npm run format         # Prettier --write over src/
 npm run db:down        # Stop PostgreSQL
 
 # Frontend (React + Vite, port 5173) — run from frontend/
 npm install
 npm run dev            # Vite dev server (proxies /videos and /chat → :3000)
 npm run build          # tsc -b && vite build
+npm run lint           # ESLint (incl. react-hooks rules)
+npm run format         # Prettier --write over src/
 ```
 
-There is **no test suite or linter configured** in either package — "build" is the only correctness gate. Both packages enforce TypeScript strict mode; fix type errors before considering work done.
+There is **no test suite** in either package — "build" plus `npm run lint` are the correctness gates. Both packages enforce TypeScript strict mode and ship ESLint (flat config) + Prettier; run lint and fix type errors before considering work done.
 
 To run anything end-to-end: start Postgres, then the backend, then the frontend. The backend will fail to start if Postgres is unreachable.
 

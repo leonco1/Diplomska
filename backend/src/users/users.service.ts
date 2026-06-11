@@ -65,7 +65,10 @@ export class UsersService {
         email: claims.email,
         username: claims.username,
       });
-    } else if (user.email !== claims.email || user.username !== claims.username) {
+    } else if (
+      user.email !== claims.email ||
+      user.username !== claims.username
+    ) {
       user.email = claims.email;
       user.username = claims.username;
     } else {
@@ -91,7 +94,11 @@ export class UsersService {
       where: { user: { id: user.id }, video: { id: video.id } },
     });
     if (!view) {
-      view = this.views.create({ user, video, lastPositionSeconds: positionSeconds });
+      view = this.views.create({
+        user,
+        video,
+        lastPositionSeconds: positionSeconds,
+      });
     } else {
       view.lastPositionSeconds = positionSeconds;
     }

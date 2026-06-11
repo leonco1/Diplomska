@@ -36,13 +36,20 @@ export default function HistoryPage() {
         const entries = await Promise.all(
           history.map(async (v) => {
             try {
-              return [v.video.id, await getVideoEmotionStats(v.video.id)] as const;
+              return [
+                v.video.id,
+                await getVideoEmotionStats(v.video.id),
+              ] as const;
             } catch {
               return null;
             }
           }),
         );
-        setStats(Object.fromEntries(entries.filter(Boolean) as [string, VideoEmotionStats][]));
+        setStats(
+          Object.fromEntries(
+            entries.filter(Boolean) as [string, VideoEmotionStats][],
+          ),
+        );
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));

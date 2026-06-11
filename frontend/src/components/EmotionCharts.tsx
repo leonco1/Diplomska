@@ -56,7 +56,11 @@ export function EmotionBars({
           data={data}
           margin={{ top: 8, right: 48, bottom: 4, left: 8 }}
         >
-          <CartesianGrid stroke="#2a2e3c" strokeDasharray="3 3" horizontal={false} />
+          <CartesianGrid
+            stroke="#2a2e3c"
+            strokeDasharray="3 3"
+            horizontal={false}
+          />
           <XAxis
             type="number"
             domain={[0, 1]}
@@ -70,7 +74,9 @@ export function EmotionBars({
             width={72}
             stroke="#9ca3af"
             fontSize={12}
-            tickFormatter={(s: string) => s.charAt(0).toUpperCase() + s.slice(1)}
+            tickFormatter={(s: string) =>
+              s.charAt(0).toUpperCase() + s.slice(1)
+            }
           />
           <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
             {data.map((b) => (
@@ -121,7 +127,10 @@ export default function EmotionCharts({
       <div className="emotion-chart-card">
         <h4>Emotion over time</h4>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={history} margin={{ top: 8, right: 12, bottom: 4, left: -16 }}>
+          <LineChart
+            data={history}
+            margin={{ top: 8, right: 12, bottom: 4, left: -16 }}
+          >
             <CartesianGrid stroke="#2a2e3c" strokeDasharray="3 3" />
             <XAxis
               dataKey="t"
@@ -138,7 +147,10 @@ export default function EmotionCharts({
               fontSize={12}
             />
             <Tooltip
-              contentStyle={{ background: '#1b1e27', border: '1px solid #2a2e3c' }}
+              contentStyle={{
+                background: '#1b1e27',
+                border: '1px solid #2a2e3c',
+              }}
               labelFormatter={(s) => `${s}s`}
               formatter={(v, name) => [fmtPct(Number(v)), name]}
             />

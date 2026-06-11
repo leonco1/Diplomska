@@ -68,8 +68,7 @@ export default function WatchPage() {
         <h2>Track your reaction</h2>
         <p className="muted">
           Enable your camera to record how you feel while watching. Readings are
-          saved and visualised on the{' '}
-          <Link to="/emotion">Emotion</Link> page.
+          saved and visualised on the <Link to="/emotion">Emotion</Link> page.
           {saved > 0 && ` (${saved} saved)`}
         </p>
         <EmotionTracker

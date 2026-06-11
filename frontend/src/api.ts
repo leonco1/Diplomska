@@ -25,6 +25,30 @@ async function authFetch(
   return fetch(input, { ...init, headers });
 }
 
+/** Authenticated GET that parses JSON and throws `errorMessage` on a non-2xx. */
+async function getJson<T>(url: string, errorMessage: string): Promise<T> {
+  const res = await authFetch(url);
+  if (!res.ok) throw new Error(errorMessage);
+  return res.json() as Promise<T>;
+}
+
+/** Authenticated JSON POST that parses the response and throws `errorMessage` on a non-2xx. */
+async function postJson<T>(
+  url: string,
+  body: unknown,
+  errorMessage: string,
+  signal?: AbortSignal,
+): Promise<T> {
+  const res = await authFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!res.ok) throw new Error(errorMessage);
+  return res.json() as Promise<T>;
+}
+
 export interface MeProfile {
   id: string;
   keycloakId: string;
@@ -97,16 +121,12 @@ export interface TextEmotionResult {
   confidence: number;
 }
 
-export async function listVideos(): Promise<Video[]> {
-  const res = await authFetch('/videos');
-  if (!res.ok) throw new Error('Failed to load videos');
-  return res.json();
+export function listVideos(): Promise<Video[]> {
+  return getJson('/videos', 'Failed to load videos');
 }
 
-export async function getVideo(id: string): Promise<Video> {
-  const res = await authFetch(`/videos/${id}`);
-  if (!res.ok) throw new Error('Video not found');
-  return res.json();
+export function getVideo(id: string): Promise<Video> {
+  return getJson(`/videos/${id}`, 'Video not found');
 }
 
 export function streamUrl(id: string): string {
@@ -157,33 +177,29 @@ export async function uploadVideo(
  * Sends a base64 (data-URL) webcam frame to the backend for facial emotion
  * detection via @vladmandic/human. Returns the dominant emotion + all scores.
  */
-export async function detectFaceEmotion(
+export function detectFaceEmotion(
   image: string,
   signal?: AbortSignal,
 ): Promise<FaceEmotionResult> {
-  const res = await authFetch('/emotion/face', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image }),
+  return postJson(
+    '/emotion/face',
+    { image },
+    'Face emotion detection failed',
     signal,
-  });
-  if (!res.ok) throw new Error('Face emotion detection failed');
-  return res.json();
+  );
 }
 
 /** Classifies the dominant emotion of a text message via the OpenAI chat path. */
-export async function classifyTextEmotion(
+export function classifyTextEmotion(
   text: string,
   signal?: AbortSignal,
 ): Promise<TextEmotionResult> {
-  const res = await authFetch('/chat/emotion', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+  return postJson(
+    '/chat/emotion',
+    { text },
+    'Text emotion classification failed',
     signal,
-  });
-  if (!res.ok) throw new Error('Text emotion classification failed');
-  return res.json();
+  );
 }
 
 /**
@@ -228,62 +244,49 @@ export async function streamChat(
 }
 
 /** The current user's profile + realm roles. */
-export async function getMe(): Promise<MeProfile> {
-  const res = await authFetch('/me');
-  if (!res.ok) throw new Error('Failed to load profile');
-  return res.json();
+export function getMe(): Promise<MeProfile> {
+  return getJson('/me', 'Failed to load profile');
 }
 
 /** The current user's watch history, newest first. */
-export async function getHistory(): Promise<VideoView[]> {
-  const res = await authFetch('/me/history');
-  if (!res.ok) throw new Error('Failed to load history');
-  return res.json();
+export function getHistory(): Promise<VideoView[]> {
+  return getJson('/me/history', 'Failed to load history');
 }
 
 /** Record (or refresh) that the user watched a video. */
-export async function recordView(
+export function recordView(
   videoId: string,
   positionSeconds = 0,
 ): Promise<VideoView> {
-  const res = await authFetch('/me/history', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ videoId, positionSeconds }),
-  });
-  if (!res.ok) throw new Error('Failed to record view');
-  return res.json();
+  return postJson(
+    '/me/history',
+    { videoId, positionSeconds },
+    'Failed to record view',
+  );
 }
 
 /** Persist one facial-emotion reading captured while watching a video. */
-export async function saveEmotionSample(sample: {
+export function saveEmotionSample(sample: {
   videoId: string;
   tSeconds: number;
   dominantEmotion: string;
   score: number;
   scores?: Record<string, number>;
 }): Promise<EmotionSampleRecord> {
-  const res = await authFetch('/me/emotions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(sample),
-  });
-  if (!res.ok) throw new Error('Failed to save emotion sample');
-  return res.json();
+  return postJson('/me/emotions', sample, 'Failed to save emotion sample');
 }
 
 /** The user's persisted emotion timeline + aggregate for one video. */
-export async function getVideoEmotionStats(
+export function getVideoEmotionStats(
   videoId: string,
 ): Promise<VideoEmotionStats> {
-  const res = await authFetch(`/me/videos/${videoId}/emotions`);
-  if (!res.ok) throw new Error('Failed to load emotion stats');
-  return res.json();
+  return getJson(
+    `/me/videos/${videoId}/emotions`,
+    'Failed to load emotion stats',
+  );
 }
 
 /** Per-video + lifetime emotion roll-up for the Emotion dashboard. */
-export async function getEmotionOverview(): Promise<EmotionOverview> {
-  const res = await authFetch('/me/emotions');
-  if (!res.ok) throw new Error('Failed to load emotion overview');
-  return res.json();
+export function getEmotionOverview(): Promise<EmotionOverview> {
+  return getJson('/me/emotions', 'Failed to load emotion overview');
 }

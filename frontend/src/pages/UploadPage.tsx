@@ -19,7 +19,10 @@ export default function UploadPage() {
     }
     setProgress(0);
     try {
-      const video = await uploadVideo({ title, description, file }, setProgress);
+      const video = await uploadVideo(
+        { title, description, file },
+        setProgress,
+      );
       navigate(`/watch/${video.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');

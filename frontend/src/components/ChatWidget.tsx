@@ -16,7 +16,8 @@ const EMOTION_EMOJI: Record<string, string> = {
 
 const GREETING: UiMessage = {
   role: 'assistant',
-  content: "Hi! I'm the StreamApp support bot. Ask me how to upload, watch, or troubleshoot videos.",
+  content:
+    "Hi! I'm the StreamApp support bot. Ask me how to upload, watch, or troubleshoot videos.",
 };
 
 export default function ChatWidget() {
@@ -39,7 +40,11 @@ export default function ChatWidget() {
     // Conversation sent to the server (excludes the canned greeting).
     const history = [...messages.filter((m) => m !== GREETING), userMsg];
 
-    setMessages((prev) => [...prev, userMsg, { role: 'assistant', content: '' }]);
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      { role: 'assistant', content: '' },
+    ]);
     setInput('');
     setBusy(true);
 
@@ -91,7 +96,10 @@ export default function ChatWidget() {
               <div key={i} className={`msg ${m.role}`}>
                 {m.content || (busy && i === messages.length - 1 ? '…' : '')}
                 {m.emotion && (
-                  <span className="emotion-chip" title={`Detected emotion: ${m.emotion}`}>
+                  <span
+                    className="emotion-chip"
+                    title={`Detected emotion: ${m.emotion}`}
+                  >
                     {EMOTION_EMOJI[m.emotion] ?? '🙂'} {m.emotion}
                   </span>
                 )}

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Video } from './videos/video.entity';
@@ -17,17 +17,20 @@ import { RolesGuard } from './auth/roles.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT ?? 5432),
-      username: process.env.DB_USER || 'streamapp',
-      password: process.env.DB_PASSWORD || 'streamapp',
-      database: process.env.DB_NAME || 'streamapp',
-      entities: [Video, User, VideoView, EmotionSample],
-      // Auto-create tables from entities. Fine for a thesis/demo;
-      // use migrations instead for production.
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST') || 'localhost',
+        port: Number(config.get<string>('DB_PORT') ?? 5432),
+        username: config.get<string>('DB_USER') || 'streamapp',
+        password: config.get<string>('DB_PASSWORD') || 'streamapp',
+        database: config.get<string>('DB_NAME') || 'streamapp',
+        entities: [Video, User, VideoView, EmotionSample],
+        // Auto-create tables from entities. Fine for a thesis/demo;
+        // use migrations instead for production.
+        synchronize: true,
+      }),
     }),
     AuthModule,
     UsersModule,

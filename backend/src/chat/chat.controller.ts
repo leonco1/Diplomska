@@ -39,7 +39,9 @@ export class ChatController {
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Unexpected error from the AI service.';
+        err instanceof Error
+          ? err.message
+          : 'Unexpected error from the AI service.';
       res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
     } finally {
       res.end();

@@ -1,11 +1,46 @@
-import { Module } from '@nestjs/common';
+import { BadRequestException, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { diskStorage } from 'multer';
+import { randomBytes } from 'crypto';
+import { extname } from 'path';
 import { VideosController } from './videos.controller';
-import { VideosService } from './videos.service';
+import { UPLOAD_DIR, VideosService } from './videos.service';
 import { Video } from './video.entity';
 
+const DEFAULT_MAX_UPLOAD_BYTES = 524_288_000; // 500 MB
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Video])],
+  imports: [
+    TypeOrmModule.forFeature([Video]),
+    // Store uploads on disk under a random filename, accept only video/*,
+    // and cap the size via MAX_UPLOAD_BYTES.
+    MulterModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        storage: diskStorage({
+          destination: UPLOAD_DIR,
+          filename: (_req, file, cb) => {
+            const unique = randomBytes(16).toString('hex');
+            cb(null, `${unique}${extname(file.originalname)}`);
+          },
+        }),
+        limits: {
+          fileSize: Number(
+            config.get<string>('MAX_UPLOAD_BYTES') ?? DEFAULT_MAX_UPLOAD_BYTES,
+          ),
+        },
+        fileFilter: (_req, file, cb) => {
+          if (file.mimetype.startsWith('video/')) {
+            cb(null, true);
+          } else {
+            cb(new BadRequestException('Only video files are allowed'), false);
+          }
+        },
+      }),
+    }),
+  ],
   controllers: [VideosController],
   providers: [VideosService],
 })

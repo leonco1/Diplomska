@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { ChatMessageDto } from './chat.dto';
 
@@ -30,7 +31,8 @@ What you know about the app:
 - Users can upload videos from the Upload page. Supported formats are common video types (MP4, WebM, MOV, etc.). Max upload size is 500 MB.
 - Uploaded videos appear in the catalog on the Home page. Click any video to watch it.
 - The video player supports play/pause, volume, fullscreen, and seeking (scrubbing the timeline).
-- There is no login required in this version; uploads are public to anyone using the app.
+- Users sign in through the app's login screen (Keycloak). Only admins can upload or delete videos; regular users can browse and watch everything.
+- The History page lists videos the user has watched; the Emotion page summarises camera-based emotion readings recorded (opt-in) while watching.
 - This is a student thesis project, so it is meant for demos rather than production traffic.
 
 Guidance:
@@ -45,9 +47,9 @@ export class ChatService {
   private readonly client: OpenAI | null;
   private readonly model: string;
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    this.model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  constructor(config: ConfigService) {
+    const apiKey = config.get<string>('OPENAI_API_KEY');
+    this.model = config.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
     this.client = apiKey ? new OpenAI({ apiKey }) : null;
     if (!this.client) {
       this.logger.warn(

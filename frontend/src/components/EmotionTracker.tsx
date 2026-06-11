@@ -68,7 +68,9 @@ export default function EmotionTracker({
   const streamRef = useRef<MediaStream | null>(null);
   // Keep the latest onSample without re-triggering the camera effect.
   const onSampleRef = useRef(onSample);
-  onSampleRef.current = onSample;
+  useEffect(() => {
+    onSampleRef.current = onSample;
+  }, [onSample]);
 
   // The set of emotion lines to draw is the union of every emotion seen so far.
   const emotionKeys = useMemo(() => {
@@ -81,13 +83,19 @@ export default function EmotionTracker({
     return [...keys];
   }, [history]);
 
+  // Starts a fresh session (clearing any summary left over from a previous
+  // run) or stops the current one; the effect below reacts to `enabled`.
+  function toggleTracking() {
+    if (!enabled) {
+      setCurrent(null);
+      setBreakdown([]);
+      setHistory([]);
+    }
+    setEnabled(!enabled);
+  }
+
   useEffect(() => {
     if (!enabled) return;
-
-    // Fresh session: clear any summary left over from a previous run.
-    setCurrent(null);
-    setBreakdown([]);
-    setHistory([]);
 
     let cancelled = false;
     const canvas = document.createElement('canvas');
@@ -178,7 +186,7 @@ export default function EmotionTracker({
   return (
     <div className="emotion-tracker">
       <div className="emotion-tracker-head">
-        <button onClick={() => setEnabled((e) => !e)}>
+        <button onClick={toggleTracking}>
           {enabled
             ? 'Stop emotion tracking'
             : (startLabel ?? '🎥 Track my emotion')}
@@ -202,8 +210,8 @@ export default function EmotionTracker({
       {/* While tracking we only collect; the charts appear once it's stopped. */}
       {showCharts && enabled && history.length > 0 && (
         <p className="muted emotion-collecting">
-          Collecting… {history.length} sample{history.length === 1 ? '' : 's'} so
-          far. Stop tracking to see the summary.
+          Collecting… {history.length} sample{history.length === 1 ? '' : 's'}{' '}
+          so far. Stop tracking to see the summary.
         </p>
       )}
       {showCharts && !enabled && history.length > 0 && (
