@@ -20,20 +20,38 @@ export type HistoryPoint = { t: number } & Record<string, number>;
 // Stable colours keyed by (normalised) emotion so a given emotion keeps the
 // same colour across both charts and across the whole session.
 const COLORS: Record<string, string> = {
-  joy: '#fbbf24',
-  happy: '#fbbf24',
-  happiness: '#fbbf24',
-  sad: '#60a5fa',
-  sadness: '#60a5fa',
-  angry: '#f87171',
-  anger: '#f87171',
-  fear: '#a78bfa',
-  surprise: '#f472b6',
-  disgust: '#34d399',
-  neutral: '#9ca3af',
+  joy: '#d97706',
+  happy: '#d97706',
+  happiness: '#d97706',
+  sad: '#2563eb',
+  sadness: '#2563eb',
+  angry: '#cc181e',
+  anger: '#cc181e',
+  fear: '#7c3aed',
+  surprise: '#db2777',
+  disgust: '#059669',
+  neutral: '#666666',
 };
-export const colorFor = (emotion: string) => COLORS[emotion] ?? '#cbd5e1';
+export const colorFor = (emotion: string) => COLORS[emotion] ?? '#999999';
 const fmtPct = (v: number) => `${Math.round(v * 100)}%`;
+
+// Shared 2012-style card wrapper for both charts.
+function ChartCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border border-yt-border bg-white p-3 pb-1">
+      <h4 className="mt-0 mb-2 text-[11px] font-bold tracking-wide text-yt-gray uppercase">
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
 
 /**
  * Horizontal bar chart of a set of emotion scores (each 0–1). Reused for the
@@ -48,8 +66,7 @@ export function EmotionBars({
 }) {
   if (data.length === 0) return null;
   return (
-    <div className="emotion-chart-card">
-      <h4>{title}</h4>
+    <ChartCard title={title}>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart
           layout="vertical"
@@ -57,7 +74,7 @@ export function EmotionBars({
           margin={{ top: 8, right: 48, bottom: 4, left: 8 }}
         >
           <CartesianGrid
-            stroke="#2a2e3c"
+            stroke="#e8e8e8"
             strokeDasharray="3 3"
             horizontal={false}
           />
@@ -65,20 +82,20 @@ export function EmotionBars({
             type="number"
             domain={[0, 1]}
             tickFormatter={fmtPct}
-            stroke="#9ca3af"
-            fontSize={12}
+            stroke="#666666"
+            fontSize={11}
           />
           <YAxis
             type="category"
             dataKey="emotion"
             width={72}
-            stroke="#9ca3af"
-            fontSize={12}
+            stroke="#666666"
+            fontSize={11}
             tickFormatter={(s: string) =>
               s.charAt(0).toUpperCase() + s.slice(1)
             }
           />
-          <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+          <Bar dataKey="score" radius={[0, 2, 2, 0]} isAnimationActive={false}>
             {data.map((b) => (
               <Cell key={b.emotion} fill={colorFor(b.emotion)} />
             ))}
@@ -87,14 +104,14 @@ export function EmotionBars({
               dataKey="score"
               position="right"
               formatter={(v) => fmtPct(Number(v))}
-              fill="#e8eaf1"
-              fontSize={12}
+              fill="#333333"
+              fontSize={11}
               fontWeight={600}
             />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 }
 
@@ -123,33 +140,33 @@ export default function EmotionCharts({
   if (history.length === 0) return null;
 
   return (
-    <div className="emotion-charts">
-      <div className="emotion-chart-card">
-        <h4>Emotion over time</h4>
+    <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <ChartCard title="Emotion over time">
         <ResponsiveContainer width="100%" height={220}>
           <LineChart
             data={history}
             margin={{ top: 8, right: 12, bottom: 4, left: -16 }}
           >
-            <CartesianGrid stroke="#2a2e3c" strokeDasharray="3 3" />
+            <CartesianGrid stroke="#e8e8e8" strokeDasharray="3 3" />
             <XAxis
               dataKey="t"
               type="number"
               domain={['dataMin', 'dataMax']}
               tickFormatter={(s) => `${s}s`}
-              stroke="#9ca3af"
-              fontSize={12}
+              stroke="#666666"
+              fontSize={11}
             />
             <YAxis
               domain={[0, 1]}
               tickFormatter={fmtPct}
-              stroke="#9ca3af"
-              fontSize={12}
+              stroke="#666666"
+              fontSize={11}
             />
             <Tooltip
               contentStyle={{
-                background: '#1b1e27',
-                border: '1px solid #2a2e3c',
+                background: '#ffffff',
+                border: '1px solid #cccccc',
+                fontSize: 12,
               }}
               labelFormatter={(s) => `${s}s`}
               formatter={(v, name) => [fmtPct(Number(v)), name]}
@@ -170,7 +187,7 @@ export default function EmotionCharts({
             ))}
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </ChartCard>
 
       <EmotionBars data={breakdown} title={breakdownTitle} />
     </div>

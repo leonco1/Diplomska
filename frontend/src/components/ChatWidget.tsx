@@ -82,22 +82,36 @@ export default function ChatWidget() {
   }
 
   return (
-    <div className="chat">
+    <div className="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-2">
       {open && (
-        <div className="chat-panel">
-          <div className="chat-header">
-            <span>Support</span>
-            <button onClick={() => setOpen(false)} aria-label="Close">
+        <div className="flex h-[420px] w-[320px] max-w-[90vw] flex-col overflow-hidden rounded-[2px] border border-[#ccc] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+          <div className="flex items-center justify-between border-b border-[#d3d3d3] bg-linear-to-b from-[#fefefe] to-[#f3f3f3] px-3 py-2 text-[13px] font-bold text-yt-text">
+            <span>Help &amp; Support</span>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+              className="cursor-pointer border-none bg-transparent text-[16px] leading-none text-yt-gray hover:text-yt-text"
+            >
               ×
             </button>
           </div>
-          <div className="chat-messages" ref={scrollRef}>
+          <div
+            className="flex flex-1 flex-col gap-2 overflow-y-auto bg-white p-3"
+            ref={scrollRef}
+          >
             {messages.map((m, i) => (
-              <div key={i} className={`msg ${m.role}`}>
+              <div
+                key={i}
+                className={`max-w-[85%] rounded-[2px] border px-2.5 py-1.5 text-[12px] leading-snug whitespace-pre-wrap ${
+                  m.role === 'user'
+                    ? 'self-end border-[#bdd2ea] bg-[#e8f0fa] text-yt-text'
+                    : 'self-start border-yt-border bg-[#f8f8f8] text-yt-text'
+                }`}
+              >
                 {m.content || (busy && i === messages.length - 1 ? '…' : '')}
                 {m.emotion && (
                   <span
-                    className="emotion-chip"
+                    className="mt-1 block text-[10px] text-yt-meta capitalize"
                     title={`Detected emotion: ${m.emotion}`}
                   >
                     {EMOTION_EMOJI[m.emotion] ?? '🙂'} {m.emotion}
@@ -106,20 +120,28 @@ export default function ChatWidget() {
               </div>
             ))}
           </div>
-          <form className="chat-input" onSubmit={handleSubmit}>
+          <form
+            className="flex gap-2 border-t border-yt-border bg-[#f8f8f8] p-2"
+            onSubmit={handleSubmit}
+          >
             <input
+              className="yt-input min-w-0 flex-1"
               value={input}
               placeholder="Ask a question…"
               onChange={(e) => setInput(e.target.value)}
               disabled={busy}
             />
-            <button type="submit" disabled={busy || !input.trim()}>
+            <button
+              type="submit"
+              disabled={busy || !input.trim()}
+              className="yt-btn"
+            >
               Send
             </button>
           </form>
         </div>
       )}
-      <button className="chat-fab" onClick={() => setOpen((o) => !o)}>
+      <button className="yt-btn" onClick={() => setOpen((o) => !o)}>
         {open ? 'Close' : '💬 Support'}
       </button>
     </div>

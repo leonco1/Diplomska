@@ -49,12 +49,14 @@ function VideoEmotionCard({ entry }: { entry: VideoEmotionSummary }) {
   const shares = aggregateToShares(entry.aggregate, entry.sampleCount);
 
   return (
-    <section className="emotion-video-card">
-      <div className="emotion-video-head">
-        <h3>
-          <Link to={`/watch/${entry.video.id}`}>{entry.video.title}</Link>
+    <section className="mt-4 border border-yt-border bg-[#f8f8f8] p-4">
+      <div className="flex items-baseline justify-between gap-4">
+        <h3 className="m-0 text-[15px] font-bold">
+          <Link to={`/watch/${entry.video.id}`} className="yt-link">
+            {entry.video.title}
+          </Link>
         </h3>
-        <span className="muted">
+        <span className="text-[11px] whitespace-nowrap text-yt-meta">
           {entry.sampleCount} reading{entry.sampleCount === 1 ? '' : 's'}
         </span>
       </div>
@@ -67,7 +69,7 @@ function VideoEmotionCard({ entry }: { entry: VideoEmotionSummary }) {
           breakdownTitle="Emotion mix"
         />
       ) : (
-        <div className="emotion-charts">
+        <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
           <EmotionBars data={shares} title="Emotion mix" />
         </div>
       )}
@@ -87,45 +89,58 @@ export default function EmotionPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="muted">Loading…</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (loading) return <p className="text-yt-gray">Loading…</p>;
+  if (error)
+    return (
+      <p className="border border-[#ecc] bg-[#fff7f7] px-3 py-2 text-yt-red">
+        {error}
+      </p>
+    );
 
   const lifetimeShares = overview
     ? aggregateToShares(overview.lifetime, overview.totalSamples)
     : [];
 
   return (
-    <div className="emotion-page">
-      <h1>Emotion recognition</h1>
-      <p className="desc">
+    <div>
+      <h1 className="mt-0 mb-3 border-b border-yt-border pb-2 text-[15px] font-bold uppercase">
+        Emotion Recognition
+      </h1>
+      <p className="max-w-[60ch] text-yt-gray">
         Emotions recorded while you watch are summarised here — your all-time
         mix across every video, and a per-video breakdown. Enable the camera on
         a video's watch page to add readings.
       </p>
 
       {!overview || overview.totalSamples === 0 ? (
-        <div className="empty">
-          <h2>No emotion data yet</h2>
-          <p className="muted">
+        <div className="py-16 text-center">
+          <h2 className="mb-2 text-[18px] font-bold">No emotion data yet</h2>
+          <p className="text-yt-gray">
             Open a video, start “Track my reaction”, and your emotions will be
-            recorded here. <Link to="/">Browse videos</Link>.
+            recorded here.{' '}
+            <Link to="/" className="yt-link">
+              Browse videos
+            </Link>
+            .
           </p>
         </div>
       ) : (
         <>
-          <section className="emotion-lifetime">
-            <h2>Your all-time emotions</h2>
-            <p className="muted">
+          <section className="mt-6">
+            <h2 className="mb-1 text-[15px] font-bold">
+              Your all-time emotions
+            </h2>
+            <p className="text-yt-gray">
               Share of {overview.totalSamples} reading
               {overview.totalSamples === 1 ? '' : 's'} across all videos.
             </p>
-            <div className="emotion-charts">
+            <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
               <EmotionBars data={lifetimeShares} title="All-time emotion mix" />
             </div>
           </section>
 
-          <section className="emotion-per-video">
-            <h2>By video</h2>
+          <section className="mt-8">
+            <h2 className="mb-1 text-[15px] font-bold">By video</h2>
             {overview.perVideo.map((entry) => (
               <VideoEmotionCard key={entry.video.id} entry={entry} />
             ))}

@@ -46,29 +46,57 @@ export default function WatchPage() {
     [id],
   );
 
-  if (error) return <p className="error">{error}</p>;
-  if (!video) return <p className="muted">Loading…</p>;
+  if (error)
+    return (
+      <p className="border border-[#ecc] bg-[#fff7f7] px-3 py-2 text-yt-red">
+        {error}
+      </p>
+    );
+  if (!video) return <p className="text-yt-gray">Loading…</p>;
 
   return (
-    <div className="watch">
-      <Link to="/" className="back">
-        ← Back
+    <div className="mx-auto max-w-[854px]">
+      <Link to="/" className="yt-link mb-2 inline-block text-[11px]">
+        « Back to Browse
       </Link>
+
+      <h1 className="mb-2 text-[22px] leading-tight font-normal text-[#1a1a1a]">
+        {video.title}
+      </h1>
+
       <video
         ref={playerRef}
-        className="player"
+        className="block max-h-[480px] w-full border border-[#ccc] bg-black"
         src={streamUrl(video.id)}
         controls
         autoPlay
       />
-      <h1>{video.title}</h1>
-      {video.description && <p className="desc">{video.description}</p>}
 
-      <section className="watch-emotion">
-        <h2>Track your reaction</h2>
-        <p className="muted">
+      {/* 2012-style info bar under the player */}
+      <div className="mt-2 border-b border-yt-border pb-2 text-[11px] text-yt-meta">
+        Uploaded {new Date(video.createdAt).toLocaleDateString()}
+      </div>
+
+      {video.description && (
+        <div className="mt-3 border border-yt-border bg-[#f8f8f8] p-3">
+          <h4 className="mt-0 mb-1 text-[11px] font-bold text-yt-gray uppercase">
+            Description
+          </h4>
+          <p className="m-0 whitespace-pre-wrap text-yt-text">
+            {video.description}
+          </p>
+        </div>
+      )}
+
+      <section className="mt-6 border-t border-yt-border pt-4">
+        <h2 className="mt-0 mb-1 text-[15px] font-bold">Track your reaction</h2>
+        <p className="text-yt-gray">
           Enable your camera to record how you feel while watching. Readings are
-          saved and visualised on the <Link to="/emotion">Emotion</Link> page.
+          saved and visualised on the{' '}
+          <Link to="/emotion" className="yt-link">
+            Emotion
+          </Link>{' '}
+          page.
           {saved > 0 && ` (${saved} saved)`}
         </p>
         <EmotionTracker

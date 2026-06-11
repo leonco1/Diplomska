@@ -57,11 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   if (!ready) {
-    return (
-      <p className="muted" style={{ padding: '2rem' }}>
-        Signing in…
-      </p>
-    );
+    return <p className="p-8 text-yt-gray">Signing in…</p>;
   }
 
   const roles = keycloak.tokenParsed?.realm_access?.roles ?? [];

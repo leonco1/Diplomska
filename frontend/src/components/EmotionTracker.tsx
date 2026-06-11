@@ -184,32 +184,36 @@ export default function EmotionTracker({
   }, [enabled]);
 
   return (
-    <div className="emotion-tracker">
-      <div className="emotion-tracker-head">
-        <button onClick={toggleTracking}>
+    <div className="mt-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <button onClick={toggleTracking} className="yt-btn">
           {enabled
             ? 'Stop emotion tracking'
             : (startLabel ?? '🎥 Track my emotion')}
         </button>
         {enabled && current && (
-          <span className="emotion-badge">
+          <span className="inline-flex items-center gap-1.5 border border-[#bdd2ea] bg-[#e8f0fa] px-2 py-1 text-[12px] font-bold capitalize">
             {EMOJI[current.emotion] ?? '🙂'} {current.emotion}
-            <small> {Math.round(current.score * 100)}%</small>
+            <small className="font-normal text-yt-gray">
+              {Math.round(current.score * 100)}%
+            </small>
           </span>
         )}
-        {enabled && status && <span className="muted">{status}</span>}
+        {enabled && status && (
+          <span className="text-[12px] text-yt-gray">{status}</span>
+        )}
       </div>
       {/* Kept in the DOM (hidden) while enabled so frames can be captured. */}
       <video
         ref={videoRef}
-        className="emotion-preview"
+        className="mt-3 w-[240px] max-w-full -scale-x-100 border border-[#ccc] bg-black"
         muted
         playsInline
         style={{ display: enabled ? 'block' : 'none' }}
       />
       {/* While tracking we only collect; the charts appear once it's stopped. */}
       {showCharts && enabled && history.length > 0 && (
-        <p className="muted emotion-collecting">
+        <p className="mt-3 text-yt-gray">
           Collecting… {history.length} sample{history.length === 1 ? '' : 's'}{' '}
           so far. Stop tracking to see the summary.
         </p>
