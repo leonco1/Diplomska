@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+build/
+*.tsbuildinfo
+
+# Vite cache
+.vite/
+**/.vite/
+
+# Environment / secrets (OPENAI_API_KEY, DB creds, Keycloak config)
+.env
+.env.*
+!.env.example
+**/.env
+!**/.env.example
+
+# Uploaded videos (stored on disk, not in git)
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Coverage / test output
+coverage/
