@@ -35,7 +35,6 @@ export class VideosController {
     return this.videos.findOne(id);
   }
 
-  // Storage, size limit, and video-only filter are configured in VideosModule.
   @Post()
   @Roles('admin')
   @UseInterceptors(FileInterceptor('file'))
@@ -55,10 +54,6 @@ export class VideosController {
     return this.videos.remove(id);
   }
 
-  /**
-   * Streams the video file, honoring HTTP Range requests so the browser can
-   * seek/scrub. Responds 206 Partial Content for ranged requests, 200 otherwise.
-   */
   @Get(':id/stream')
   @Public()
   async stream(
@@ -77,7 +72,6 @@ export class VideosController {
 
     const range = req.headers.range;
     if (range) {
-      // Format: "bytes=START-END"
       const match = /bytes=(\d*)-(\d*)/.exec(range);
       const start = match && match[1] ? parseInt(match[1], 10) : 0;
       const end = match && match[2] ? parseInt(match[2], 10) : size - 1;

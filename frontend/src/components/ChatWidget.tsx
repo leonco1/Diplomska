@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { classifyTextEmotion, streamChat, type ChatMessage } from '../api';
 
-// A chat message plus the optional emotion we detect for user messages.
 type UiMessage = ChatMessage & { emotion?: string };
 
 const EMOTION_EMOJI: Record<string, string> = {
@@ -37,7 +36,6 @@ export default function ChatWidget() {
     if (!text || busy) return;
 
     const userMsg: UiMessage = { role: 'user', content: text };
-    // Conversation sent to the server (excludes the canned greeting).
     const history = [...messages.filter((m) => m !== GREETING), userMsg];
 
     setMessages((prev) => [
@@ -48,8 +46,6 @@ export default function ChatWidget() {
     setInput('');
     setBusy(true);
 
-    // Best-effort: tag the user's message with its detected emotion. Failures
-    // (e.g. OpenAI not configured) are ignored so chat still works.
     classifyTextEmotion(text)
       .then((res) =>
         setMessages((prev) =>

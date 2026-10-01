@@ -1,6 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-// tfjs-node registers the native "tensorflow" backend as a side effect.
-// It must be imported before Human so the backend is available at detect time.
 import '@tensorflow/tfjs-node';
 import { Human, type Config } from '@vladmandic/human';
 
@@ -15,18 +13,14 @@ export interface FaceEmotionResult {
   emotions: EmotionScore[];
 }
 
-// Only enable the face detector + emotion model. Everything else off to keep
-// each detect() call fast and the model download small.
 const HUMAN_CONFIG: Partial<Config> = {
   backend: 'tensorflow',
-  // Load model weights over HTTP from the official Human models host so we
-  // don't have to vendor them into the repo.
   modelBasePath: 'https://vladmandic.github.io/human-models/models/',
   cacheSensitivity: 0,
   face: {
     enabled: true,
     detector: { rotation: false, maxDetected: 1 },
-    mesh: { enabled: true }, // emotion model needs the face mesh
+    mesh: { enabled: true },
     iris: { enabled: false },
     description: { enabled: false },
     emotion: { enabled: true },
@@ -46,7 +40,6 @@ export class EmotionService {
   private readonly human = new Human(HUMAN_CONFIG);
   private warmup: Promise<void> | null = null;
 
-  /** Lazily load models on first use (and reuse the same promise afterwards). */
   private async ready(): Promise<void> {
     if (!this.warmup) {
       this.warmup = this.human.load().then(() => {
@@ -56,10 +49,6 @@ export class EmotionService {
     return this.warmup;
   }
 
-  /**
-   * Runs face + emotion detection on a raw image buffer (JPEG/PNG).
-   * Returns the dominant emotion and the full score list, sorted high→low.
-   */
   async detectFace(image: Buffer): Promise<FaceEmotionResult> {
     await this.ready();
 

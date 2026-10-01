@@ -5,10 +5,6 @@ import { UsersService } from './users.service';
 import { RecordViewDto } from './dto/record-view.dto';
 import { SaveEmotionDto } from './dto/save-emotion.dto';
 
-/**
- * "Me" endpoints — everything here is scoped to the authenticated user.
- * The global JwtAuthGuard enforces authentication; no role is required.
- */
 @Controller('me')
 export class UsersController {
   constructor(private readonly users: UsersService) {}
@@ -45,7 +41,6 @@ export class UsersController {
     return this.users.saveEmotionSample(user, dto);
   }
 
-  /** Per-video + lifetime emotion roll-up for the Emotion dashboard. */
   @Get('emotions')
   emotions(@CurrentUser('user') user: AuthUser['user']) {
     return this.users.getEmotionOverview(user);

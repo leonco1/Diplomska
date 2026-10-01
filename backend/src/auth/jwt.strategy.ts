@@ -6,10 +6,6 @@ import { passportJwtSecret } from 'jwks-rsa';
 import { UsersService } from '../users/users.service';
 import type { AuthUser } from './auth-user';
 
-/**
- * Keycloak access-token claims we rely on. `sub` identifies the user;
- * `realm_access.roles` carries the realm roles used for authorization.
- */
 interface KeycloakJwtPayload {
   sub: string;
   email?: string;
@@ -29,14 +25,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const jwksUri =
       config.get<string>('KEYCLOAK_JWKS_URI') ||
       `${issuer}/protocol/openid-connect/certs`;
-    // Optional. Keycloak's default access tokens for a public SPA client carry no
-    // `aud` claim, so audience validation is off unless KEYCLOAK_AUDIENCE is set
-    // (e.g. after adding an audience mapper). Signature + issuer are always checked.
     const audience = config.get<string>('KEYCLOAK_AUDIENCE')?.trim();
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      // Fetch + cache Keycloak's signing keys (JWKS) to verify token signatures.
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
         rateLimit: true,
@@ -49,7 +41,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /** Runs after the signature/issuer/audience checks pass. JIT-provisions the user. */
   async validate(payload: KeycloakJwtPayload): Promise<AuthUser> {
     if (!payload?.sub) {
       throw new UnauthorizedException('Token missing subject');

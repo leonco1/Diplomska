@@ -19,7 +19,6 @@ export interface VideoEmotionStats {
   aggregate: EmotionAggregate[];
 }
 
-/** One watched video's emotion summary (video metadata + its timeline/aggregate). */
 export interface VideoEmotionSummary {
   video: Video;
   sampleCount: number;
@@ -27,7 +26,6 @@ export interface VideoEmotionSummary {
   aggregate: EmotionAggregate[];
 }
 
-/** Everything the Emotion dashboard needs: per-video stats + a lifetime roll-up. */
 export interface EmotionOverview {
   totalSamples: number;
   lifetime: EmotionAggregate[];
@@ -47,10 +45,6 @@ export class UsersService {
     private readonly videos: Repository<Video>,
   ) {}
 
-  /**
-   * Find the local user for a Keycloak identity, creating it on first sight
-   * and keeping email/username in sync with the token (JIT provisioning).
-   */
   async upsertFromToken(claims: {
     keycloakId: string;
     email: string;
@@ -83,7 +77,6 @@ export class UsersService {
     return video;
   }
 
-  /** Record (or refresh) that a user watched a video. */
   async recordView(
     user: User,
     videoId: string,
@@ -105,7 +98,6 @@ export class UsersService {
     return this.views.save(view);
   }
 
-  /** A user's watch history, most recently watched first. */
   getHistory(user: User): Promise<VideoView[]> {
     return this.views.find({
       where: { user: { id: user.id } },
@@ -113,7 +105,6 @@ export class UsersService {
     });
   }
 
-  /** Persist one facial-emotion reading captured while watching a video. */
   async saveEmotionSample(
     user: User,
     data: {
@@ -136,7 +127,6 @@ export class UsersService {
     return this.samples.save(sample);
   }
 
-  /** Per-watch emotion timeline + a simple per-emotion average for charting. */
   async getVideoEmotionStats(
     user: User,
     videoId: string,
@@ -153,10 +143,6 @@ export class UsersService {
     };
   }
 
-  /**
-   * Emotion dashboard data for a user: a per-emotion roll-up for each video
-   * they recorded reactions to, plus a lifetime roll-up across every sample.
-   */
   async getEmotionOverview(user: User): Promise<EmotionOverview> {
     const samples = await this.samples.find({
       where: { user: { id: user.id } },
@@ -164,7 +150,6 @@ export class UsersService {
       order: { tSeconds: 'ASC', createdAt: 'ASC' },
     });
 
-    // Group the flat sample list by the video it was captured against.
     const byVideo = new Map<string, EmotionSample[]>();
     for (const s of samples) {
       if (!s.video) continue;
@@ -189,7 +174,6 @@ export class UsersService {
     };
   }
 
-  /** Average the dominant score per dominant emotion, most frequent first. */
   private aggregate(samples: EmotionSample[]): EmotionAggregate[] {
     const totals = new Map<string, { sum: number; count: number }>();
     for (const s of samples) {

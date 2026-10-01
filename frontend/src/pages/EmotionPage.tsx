@@ -13,10 +13,6 @@ import EmotionCharts, {
   type HistoryPoint,
 } from '../components/EmotionCharts';
 
-/**
- * Turn a per-emotion aggregate into bar-chart data, where each bar is the
- * share of readings that emotion dominated (so the bars sum to ~100%).
- */
 function aggregateToShares(
   aggregate: EmotionAggregate[],
   totalSamples: number,
@@ -28,7 +24,6 @@ function aggregateToShares(
   }));
 }
 
-/** Build a timeline (one point per sample) from persisted samples. */
 function samplesToHistory(samples: EmotionSampleRecord[]): HistoryPoint[] {
   return samples.map((s) => ({ t: s.tSeconds, ...s.scores }));
 }
@@ -60,7 +55,6 @@ function VideoEmotionCard({ entry }: { entry: VideoEmotionSummary }) {
           {entry.sampleCount} reading{entry.sampleCount === 1 ? '' : 's'}
         </span>
       </div>
-      {/* A single sample has no meaningful arc — show just the distribution. */}
       {history.length > 1 ? (
         <EmotionCharts
           history={history}

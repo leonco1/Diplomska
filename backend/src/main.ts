@@ -6,7 +6,6 @@ import { AppModule } from './app.module';
 import { UPLOAD_DIR } from './videos/videos.service';
 
 async function bootstrap() {
-  // Ensure the uploads directory exists before anything tries to write to it.
   mkdirSync(UPLOAD_DIR, { recursive: true });
 
   const app = await NestFactory.create(AppModule);

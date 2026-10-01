@@ -14,11 +14,8 @@ import {
 } from 'recharts';
 import type { EmotionScore } from '../api';
 
-// A single timeline sample: elapsed seconds plus a score per emotion.
 export type HistoryPoint = { t: number } & Record<string, number>;
 
-// Stable colours keyed by (normalised) emotion so a given emotion keeps the
-// same colour across both charts and across the whole session.
 const COLORS: Record<string, string> = {
   joy: '#d97706',
   happy: '#d97706',
@@ -35,7 +32,6 @@ const COLORS: Record<string, string> = {
 export const colorFor = (emotion: string) => COLORS[emotion] ?? '#999999';
 const fmtPct = (v: number) => `${Math.round(v * 100)}%`;
 
-// Shared 2012-style card wrapper for both charts.
 function ChartCard({
   title,
   children,
@@ -53,10 +49,6 @@ function ChartCard({
   );
 }
 
-/**
- * Horizontal bar chart of a set of emotion scores (each 0–1). Reused for the
- * "latest frame" breakdown, per-video distributions, and the lifetime mix.
- */
 export function EmotionBars({
   data,
   title,
@@ -99,7 +91,6 @@ export function EmotionBars({
             {data.map((b) => (
               <Cell key={b.emotion} fill={colorFor(b.emotion)} />
             ))}
-            {/* Always-on value labels so scores are readable without hovering. */}
             <LabelList
               dataKey="score"
               position="right"
@@ -116,21 +107,12 @@ export function EmotionBars({
 }
 
 interface Props {
-  /** Time-series of emotion scores collected over the session. */
   history: HistoryPoint[];
-  /** All emotion keys seen so far, so the timeline draws a line per emotion. */
   emotionKeys: string[];
-  /** Scores from the most recent frame, sorted high → low. */
   breakdown: EmotionScore[];
-  /** Title for the bar-chart card (defaults to the live "Latest frame" copy). */
   breakdownTitle?: string;
 }
 
-/**
- * Two views of the viewer's tracked emotions:
- *  - a live timeline (one line per emotion) showing the emotional arc, and
- *  - a bar chart of the latest frame's full score distribution.
- */
 export default function EmotionCharts({
   history,
   emotionKeys,

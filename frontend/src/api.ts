@@ -10,29 +10,22 @@ export interface Video {
   createdAt: string;
 }
 
-/**
- * fetch wrapper that refreshes and attaches the Keycloak bearer token.
- * Use for every authenticated API call (everything except the public stream URL).
- */
 async function authFetch(
   input: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  // Refresh if the token expires within 30s; ignore failures (call may still 401).
   await keycloak.updateToken(30).catch(() => undefined);
   const headers = new Headers(init.headers);
   if (keycloak.token) headers.set('Authorization', `Bearer ${keycloak.token}`);
   return fetch(input, { ...init, headers });
 }
 
-/** Authenticated GET that parses JSON and throws `errorMessage` on a non-2xx. */
 async function getJson<T>(url: string, errorMessage: string): Promise<T> {
   const res = await authFetch(url);
   if (!res.ok) throw new Error(errorMessage);
   return res.json() as Promise<T>;
 }
 
-/** Authenticated JSON POST that parses the response and throws `errorMessage` on a non-2xx. */
 async function postJson<T>(
   url: string,
   body: unknown,
@@ -137,7 +130,6 @@ export async function uploadVideo(
   data: { title: string; description: string; file: File },
   onProgress?: (percent: number) => void,
 ): Promise<Video> {
-  // Use XHR so we can report upload progress.
   await keycloak.updateToken(30).catch(() => undefined);
   return new Promise((resolve, reject) => {
     const form = new FormData();
@@ -159,13 +151,13 @@ export async function uploadVideo(
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(JSON.parse(xhr.responseText));
       } else {
-        let msg = 'Upload failed';
         try {
-          msg = JSON.parse(xhr.responseText).message ?? msg;
+          reject(
+            new Error(JSON.parse(xhr.responseText).message ?? 'Upload failed'),
+          );
         } catch {
-          /* keep default */
+          reject(new Error('Upload failed'));
         }
-        reject(new Error(msg));
       }
     };
     xhr.onerror = () => reject(new Error('Network error during upload'));
@@ -173,10 +165,6 @@ export async function uploadVideo(
   });
 }
 
-/**
- * Sends a base64 (data-URL) webcam frame to the backend for facial emotion
- * detection via @vladmandic/human. Returns the dominant emotion + all scores.
- */
 export function detectFaceEmotion(
   image: string,
   signal?: AbortSignal,
@@ -189,7 +177,6 @@ export function detectFaceEmotion(
   );
 }
 
-/** Classifies the dominant emotion of a text message via the OpenAI chat path. */
 export function classifyTextEmotion(
   text: string,
   signal?: AbortSignal,
@@ -202,10 +189,6 @@ export function classifyTextEmotion(
   );
 }
 
-/**
- * Sends the conversation to the support bot and streams the reply.
- * Calls onToken for each text chunk. Resolves when the stream ends.
- */
 export async function streamChat(
   messages: ChatMessage[],
   onToken: (text: string) => void,
@@ -228,7 +211,6 @@ export async function streamChat(
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
 
-    // SSE events are separated by a blank line.
     const events = buffer.split('\n\n');
     buffer = events.pop() ?? '';
 
@@ -238,22 +220,18 @@ export async function streamChat(
       const payload = JSON.parse(line.slice(5).trim());
       if (payload.error) throw new Error(payload.error);
       if (payload.text) onToken(payload.text);
-      // payload.done -> stream finished
     }
   }
 }
 
-/** The current user's profile + realm roles. */
 export function getMe(): Promise<MeProfile> {
   return getJson('/me', 'Failed to load profile');
 }
 
-/** The current user's watch history, newest first. */
 export function getHistory(): Promise<VideoView[]> {
   return getJson('/me/history', 'Failed to load history');
 }
 
-/** Record (or refresh) that the user watched a video. */
 export function recordView(
   videoId: string,
   positionSeconds = 0,
@@ -265,7 +243,6 @@ export function recordView(
   );
 }
 
-/** Persist one facial-emotion reading captured while watching a video. */
 export function saveEmotionSample(sample: {
   videoId: string;
   tSeconds: number;
@@ -276,7 +253,6 @@ export function saveEmotionSample(sample: {
   return postJson('/me/emotions', sample, 'Failed to save emotion sample');
 }
 
-/** The user's persisted emotion timeline + aggregate for one video. */
 export function getVideoEmotionStats(
   videoId: string,
 ): Promise<VideoEmotionStats> {
@@ -286,7 +262,6 @@ export function getVideoEmotionStats(
   );
 }
 
-/** Per-video + lifetime emotion roll-up for the Emotion dashboard. */
 export function getEmotionOverview(): Promise<EmotionOverview> {
   return getJson('/me/emotions', 'Failed to load emotion overview');
 }

@@ -9,13 +9,11 @@ import { VideosController } from './videos.controller';
 import { UPLOAD_DIR, VideosService } from './videos.service';
 import { Video } from './video.entity';
 
-const DEFAULT_MAX_UPLOAD_BYTES = 524_288_000; // 500 MB
+const DEFAULT_MAX_UPLOAD_BYTES = 524_288_000;
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Video]),
-    // Store uploads on disk under a random filename, accept only video/*,
-    // and cap the size via MAX_UPLOAD_BYTES.
     MulterModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

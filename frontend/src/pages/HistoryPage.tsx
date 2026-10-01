@@ -32,7 +32,6 @@ export default function HistoryPage() {
     getHistory()
       .then(async (history) => {
         setViews(history);
-        // Fetch the per-video emotion summary for each watched video in parallel.
         const entries = await Promise.all(
           history.map(async (v) => {
             try {

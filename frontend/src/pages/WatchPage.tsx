@@ -23,11 +23,9 @@ export default function WatchPage() {
     getVideo(id)
       .then(setVideo)
       .catch((e) => setError(e.message));
-    // Record that this user watched the video (best-effort).
     recordView(id).catch(() => undefined);
   }, [id]);
 
-  // Persist each tracked emotion sample against this video.
   const handleSample = useCallback(
     (sample: TrackedSample) => {
       if (!id) return;
@@ -72,7 +70,6 @@ export default function WatchPage() {
         autoPlay
       />
 
-      {/* 2012-style info bar under the player */}
       <div className="mt-2 border-b border-yt-border pb-2 text-[11px] text-yt-meta">
         Uploaded {new Date(video.createdAt).toLocaleDateString()}
       </div>

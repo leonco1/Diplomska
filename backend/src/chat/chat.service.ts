@@ -62,12 +62,6 @@ export class ChatService {
     return this.client !== null;
   }
 
-  /**
-   * Classifies the emotion of a piece of text (e.g. a chat message) using the
-   * same OpenAI client as the support bot. Returns one dominant label plus a
-   * 0–1 confidence. Reuses the "existing chat path" rather than a separate
-   * NLP library so accuracy tracks the model, not a static lexicon.
-   */
   async classifyEmotion(text: string): Promise<TextEmotionResult> {
     if (!this.client) {
       throw new Error('OpenAI is not configured on the server.');

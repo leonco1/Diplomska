@@ -48,10 +48,6 @@ export class ChatController {
     }
   }
 
-  /**
-   * Classifies the dominant emotion of a single piece of text via the same
-   * OpenAI path the support bot uses. Plain JSON (no streaming).
-   */
   @Post('emotion')
   async emotion(@Body() dto: EmotionRequestDto): Promise<TextEmotionResult> {
     if (!this.chat.isConfigured) {

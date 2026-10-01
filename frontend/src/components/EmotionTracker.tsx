@@ -2,13 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { detectFaceEmotion, type EmotionScore } from '../api';
 import EmotionCharts, { type HistoryPoint } from './EmotionCharts';
 
-// How often to grab a frame and ask the backend for an emotion read.
 const SAMPLE_INTERVAL_MS = 3000;
-// Downscale captured frames — the emotion model doesn't need full resolution
-// and smaller payloads keep the round-trip fast.
 const CAPTURE_WIDTH = 320;
-// Cap the timeline so a long session doesn't grow memory without bound
-// (120 samples ≈ 6 minutes at the current interval).
 const MAX_HISTORY = 120;
 
 const EMOJI: Record<string, string> = {
@@ -26,33 +21,17 @@ const EMOJI: Record<string, string> = {
 };
 
 export interface TrackedSample {
-  /** Seconds since tracking started this session. */
   tSeconds: number;
   dominant: EmotionScore;
   emotions: EmotionScore[];
 }
 
 interface Props {
-  /**
-   * Optional sink for each detected sample. Provided on the Watch page so
-   * readings can be persisted against the video being watched. When omitted
-   * the tracker just works as a standalone live demo.
-   */
   onSample?: (sample: TrackedSample) => void;
-  /** Label for the toggle button (defaults to the generic tracking copy). */
   startLabel?: string;
-  /**
-   * Whether to render the live/summary charts. The Watch page records silently
-   * (charts live on the Emotion dashboard instead), so it passes false.
-   */
   showCharts?: boolean;
 }
 
-/**
- * Opt-in webcam emotion tracker. While enabled it samples a frame every few
- * seconds, sends it to /emotion/face, and shows the viewer's current emotion.
- * Everything stops and the camera is released when disabled or unmounted.
- */
 export default function EmotionTracker({
   onSample,
   startLabel,
@@ -66,13 +45,11 @@ export default function EmotionTracker({
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  // Keep the latest onSample without re-triggering the camera effect.
   const onSampleRef = useRef(onSample);
   useEffect(() => {
     onSampleRef.current = onSample;
   }, [onSample]);
 
-  // The set of emotion lines to draw is the union of every emotion seen so far.
   const emotionKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const point of history) {
@@ -83,8 +60,6 @@ export default function EmotionTracker({
     return [...keys];
   }, [history]);
 
-  // Starts a fresh session (clearing any summary left over from a previous
-  // run) or stops the current one; the effect below reacts to `enabled`.
   function toggleTracking() {
     if (!enabled) {
       setCurrent(null);
@@ -178,8 +153,6 @@ export default function EmotionTracker({
       streamRef.current = null;
       setCurrent(null);
       setStatus('');
-      // history + breakdown are intentionally kept so the summary charts can
-      // render once tracking has finished.
     };
   }, [enabled]);
 
@@ -203,7 +176,6 @@ export default function EmotionTracker({
           <span className="text-[12px] text-yt-gray">{status}</span>
         )}
       </div>
-      {/* Kept in the DOM (hidden) while enabled so frames can be captured. */}
       <video
         ref={videoRef}
         className="mt-3 w-[240px] max-w-full -scale-x-100 border border-[#ccc] bg-black"
@@ -211,7 +183,6 @@ export default function EmotionTracker({
         playsInline
         style={{ display: enabled ? 'block' : 'none' }}
       />
-      {/* While tracking we only collect; the charts appear once it's stopped. */}
       {showCharts && enabled && history.length > 0 && (
         <p className="mt-3 text-yt-gray">
           Collecting… {history.length} sample{history.length === 1 ? '' : 's'}{' '}

@@ -6,10 +6,6 @@ import { EmotionService, type FaceEmotionResult } from './emotion.service';
 export class EmotionController {
   constructor(private readonly emotion: EmotionService) {}
 
-  /**
-   * Detects the dominant facial emotion in a single webcam frame.
-   * The frame is sent as a base64 (data-URL) JPEG/PNG from the browser.
-   */
   @Post('face')
   async face(@Body() dto: FaceEmotionDto): Promise<FaceEmotionResult> {
     const base64 = dto.image.includes(',')

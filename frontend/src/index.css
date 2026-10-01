@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
-/* 2012-era YouTube look: Arial, 13px, gray page, white content column. */
 @theme {
   --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   --color-yt-blue: #0033cc;
@@ -21,7 +20,6 @@ body {
 }
 
 @layer components {
-  /* The classic glossy gray YouTube button. */
   .yt-btn {
     @apply inline-block cursor-pointer rounded-[2px] border border-solid
       border-[#d3d3d3] bg-linear-to-b from-[#fefefe] to-[#f3f3f3] px-2.5
@@ -31,12 +29,10 @@ body {
       active:to-[#e0e0e0] disabled:cursor-default disabled:opacity-50;
   }
 
-  /* Old-YouTube blue link. */
   .yt-link {
     @apply text-yt-blue no-underline hover:underline;
   }
 
-  /* Square, flat 2012 form input. */
   .yt-input {
     @apply rounded-[2px] border border-solid border-[#ccc] bg-white px-2
       py-[5px] font-sans text-[13px] text-yt-text

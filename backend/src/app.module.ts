@@ -27,8 +27,6 @@ import { RolesGuard } from './auth/roles.guard';
         password: config.get<string>('DB_PASSWORD') || 'streamapp',
         database: config.get<string>('DB_NAME') || 'streamapp',
         entities: [Video, User, VideoView, EmotionSample],
-        // Auto-create tables from entities. Fine for a thesis/demo;
-        // use migrations instead for production.
         synchronize: true,
       }),
     }),
@@ -39,7 +37,6 @@ import { RolesGuard } from './auth/roles.guard';
     EmotionModule,
   ],
   providers: [
-    // Authenticate every request (except @Public routes), then check @Roles.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

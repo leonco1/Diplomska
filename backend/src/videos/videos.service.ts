@@ -47,12 +47,11 @@ export class VideosService {
 
   async remove(id: string) {
     const video = await this.findOne(id);
-    await fs.unlink(join(UPLOAD_DIR, video.filename)).catch(() => undefined); // ignore missing file on disk
+    await fs.unlink(join(UPLOAD_DIR, video.filename)).catch(() => undefined);
     await this.videos.delete({ id });
     return { deleted: true };
   }
 
-  /** Absolute path to the stored file for a given video. */
   filePath(filename: string) {
     return join(UPLOAD_DIR, filename);
   }

@@ -18,14 +18,8 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Guards against double-init under React 18 StrictMode (effect runs twice in dev).
 let initStarted = false;
 
-/**
- * Initializes Keycloak once on mount and renders children only after the auth
- * state is known. With `onLoad: 'login-required'` the user is redirected to the
- * Keycloak login page if they don't already have a session.
- */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -45,12 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setReady(true);
       })
       .catch(() => {
-        // If Keycloak is unreachable, fail open into an unauthenticated state
-        // so the app still renders (API calls will then 401).
         setReady(true);
       });
 
-    // Proactively refresh the token a bit before it expires.
     keycloak.onTokenExpired = () => {
       keycloak.updateToken(30).catch(() => keycloak.login());
     };

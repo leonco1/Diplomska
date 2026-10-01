@@ -52,7 +52,6 @@ export default function App() {
         <div className="mx-auto flex h-[55px] max-w-[1003px] items-center gap-5 px-4">
           <Logo />
 
-          {/* 2012 masthead search */}
           <form
             onSubmit={handleSearch}
             className="flex flex-1 justify-center"
@@ -90,7 +89,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Secondary nav row, old-tabs style */}
         <div className="mx-auto flex max-w-[1003px] items-center gap-1 px-4 pb-1">
           <NavLink to="/" end className={navClass}>
             Browse
@@ -117,7 +115,6 @@ export default function App() {
       <main className="mx-auto my-4 max-w-[1003px] border border-[#ddd] bg-white px-6 py-5 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {/* Upload is admin-only; non-admins are bounced home. */}
           <Route
             path="/upload"
             element={isAdmin ? <UploadPage /> : <Navigate to="/" replace />}

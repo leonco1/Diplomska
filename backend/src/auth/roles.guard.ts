@@ -9,10 +9,6 @@ import type { Request } from 'express';
 import { ROLES_KEY } from './roles.decorator';
 import type { AuthUser } from './auth-user';
 
-/**
- * Checks `@Roles(...)` metadata against the realm roles on the authenticated
- * user. Runs after JwtAuthGuard, so `req.user` is already populated.
- */
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
