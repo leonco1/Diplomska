@@ -9,6 +9,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { Video } from './video.entity';
 import { CreateVideoDto } from './dto/create-video.dto';
+import { UpdateVideoDto } from './dto/update-video.dto';
 
 export const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
@@ -42,6 +43,13 @@ export class VideosService {
       mimeType: file.mimetype,
       size: file.size,
     });
+    return this.videos.save(video);
+  }
+
+  async update(id: string, dto: UpdateVideoDto) {
+    const video = await this.findOne(id);
+    if (dto.title !== undefined) video.title = dto.title;
+    if (dto.description !== undefined) video.description = dto.description;
     return this.videos.save(video);
   }
 

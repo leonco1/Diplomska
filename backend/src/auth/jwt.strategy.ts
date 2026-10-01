@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     const issuer =
       config.get<string>('KEYCLOAK_ISSUER') ||
-      'http://localhost:8080/realms/streamapp';
+      'http://localhost:8081/realms/streamapp';
     const jwksUri =
       config.get<string>('KEYCLOAK_JWKS_URI') ||
       `${issuer}/protocol/openid-connect/certs`;

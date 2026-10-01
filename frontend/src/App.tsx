@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import UploadPage from './pages/UploadPage';
+import ManageVideosPage from './pages/ManageVideosPage';
 import WatchPage from './pages/WatchPage';
 import EmotionPage from './pages/EmotionPage';
 import HistoryPage from './pages/HistoryPage';
@@ -107,6 +108,10 @@ export default function App() {
               <NavLink to="/upload" className={navClass}>
                 Upload
               </NavLink>
+              <span className="text-[#ccc]">|</span>
+              <NavLink to="/manage" className={navClass}>
+                Manage
+              </NavLink>
             </>
           )}
         </div>
@@ -118,6 +123,12 @@ export default function App() {
           <Route
             path="/upload"
             element={isAdmin ? <UploadPage /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/manage"
+            element={
+              isAdmin ? <ManageVideosPage /> : <Navigate to="/" replace />
+            }
           />
           <Route path="/watch/:id" element={<WatchPage />} />
           <Route path="/history" element={<HistoryPage />} />

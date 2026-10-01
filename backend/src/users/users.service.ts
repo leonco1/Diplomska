@@ -83,19 +83,20 @@ export class UsersService {
     positionSeconds = 0,
   ): Promise<VideoView> {
     const video = await this.getVideo(videoId);
-    let view = await this.views.findOne({
+    await this.views
+      .createQueryBuilder()
+      .insert()
+      .into(VideoView)
+      .values({
+        user: { id: user.id },
+        video: { id: video.id },
+        lastPositionSeconds: positionSeconds,
+      })
+      .orUpdate(['lastPositionSeconds', 'watchedAt'], ['userId', 'videoId'])
+      .execute();
+    return this.views.findOneOrFail({
       where: { user: { id: user.id }, video: { id: video.id } },
     });
-    if (!view) {
-      view = this.views.create({
-        user,
-        video,
-        lastPositionSeconds: positionSeconds,
-      });
-    } else {
-      view.lastPositionSeconds = positionSeconds;
-    }
-    return this.views.save(view);
   }
 
   getHistory(user: User): Promise<VideoView[]> {

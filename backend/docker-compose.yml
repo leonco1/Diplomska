@@ -25,7 +25,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     command: start-dev --import-realm
     ports:
-      - '8080:8080'
+      - '8081:8080'
     volumes:
       # Auto-import the StreamApp realm on first start (dev mode, H2 storage).
       - ./keycloak:/opt/keycloak/data/import

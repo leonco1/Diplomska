@@ -124,7 +124,7 @@ The format: `data: {"text":"..."}\n\n` for tokens, `data: {"done":true}\n\n` at 
 
 ### Authentication & authorization (Keycloak)
 
-**Identity provider:** Keycloak, run as the `keycloak` service in `backend/docker-compose.yml` (started by `npm run db:up`). It auto-imports `backend/keycloak/realm-streamapp.json` on first start: realm `streamapp`, public SPA client `streamapp-frontend`, realm roles `admin`/`user`, and seed users `admin/admin` (admin) + `user/user`. Admin console at `http://localhost:8080` (`admin/admin`).
+**Identity provider:** Keycloak, run as the `keycloak` service in `backend/docker-compose.yml` (started by `npm run db:up`). It auto-imports `backend/keycloak/realm-streamapp.json` on first start: realm `streamapp`, public SPA client `streamapp-frontend`, realm roles `admin`/`user`, and seed users `admin/admin` (admin) + `user/user`. Admin console at `http://localhost:8081` (`admin/admin`).
 
 **Backend validation:** `backend/src/auth/`. `JwtStrategy` (passport-jwt + `jwks-rsa`) validates the bearer token's signature against Keycloak's JWKS endpoint, plus `issuer`/`audience`, then JIT-provisions a local `User` via `UsersService.upsertFromToken`. `JwtAuthGuard` is a **global** guard (`APP_GUARD`), so every endpoint needs a valid token unless decorated `@Public()` — only `GET /videos/:id/stream` is public (an HTML5 `<video src>` can't attach an `Authorization` header). `RolesGuard` + `@Roles('admin')` gate `POST /videos` and `DELETE /videos/:id`. Use `@CurrentUser()` to inject the local user + roles into a handler.
 
@@ -177,15 +177,15 @@ FRONTEND_ORIGIN=http://localhost:5173
 MAX_UPLOAD_BYTES=524288000      # 500 MB default
 
 # Keycloak (auth) — see "Authentication" below
-KEYCLOAK_ISSUER=http://localhost:8080/realms/streamapp
-KEYCLOAK_JWKS_URI=http://localhost:8080/realms/streamapp/protocol/openid-connect/certs
+KEYCLOAK_ISSUER=http://localhost:8081/realms/streamapp
+KEYCLOAK_JWKS_URI=http://localhost:8081/realms/streamapp/protocol/openid-connect/certs
 KEYCLOAK_AUDIENCE=account
 ```
 
 ### Frontend (`.env`)
 
 ```
-VITE_KEYCLOAK_URL=http://localhost:8080
+VITE_KEYCLOAK_URL=http://localhost:8081
 VITE_KEYCLOAK_REALM=streamapp
 VITE_KEYCLOAK_CLIENT_ID=streamapp-frontend
 ```

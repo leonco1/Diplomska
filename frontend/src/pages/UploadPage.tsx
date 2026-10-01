@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadVideo } from '../api';
 
@@ -6,17 +6,21 @@ export default function UploadPage() {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  function handlePick() {
+    if (!formRef.current?.reportValidity()) return;
+    fileRef.current?.click();
+  }
+
+  async function handleFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
     setError(null);
-    if (!file) {
-      setError('Please choose a video file.');
-      return;
-    }
     setProgress(0);
     try {
       const video = await uploadVideo(
@@ -38,7 +42,8 @@ export default function UploadPage() {
         Video File Upload
       </h1>
       <form
-        onSubmit={handleSubmit}
+        ref={formRef}
+        onSubmit={(e) => e.preventDefault()}
         className="flex flex-col gap-4 border border-yt-border bg-[#f8f8f8] p-4"
       >
         <label className="flex flex-col gap-1 text-[11px] font-bold text-yt-gray uppercase">
@@ -64,15 +69,13 @@ export default function UploadPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-[11px] font-bold text-yt-gray uppercase">
-          Video file
-          <input
-            type="file"
-            accept="video/*"
-            className="text-[13px] font-normal text-yt-gray"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={handleFile}
+        />
 
         {uploading && (
           <div className="relative h-[18px] overflow-hidden border border-[#ccc] bg-white">
@@ -93,8 +96,9 @@ export default function UploadPage() {
         )}
 
         <button
-          type="submit"
+          type="button"
           disabled={uploading}
+          onClick={handlePick}
           className="yt-btn self-start"
         >
           {uploading ? 'Uploading…' : 'Upload Video'}

@@ -122,6 +122,34 @@ export function getVideo(id: string): Promise<Video> {
   return getJson(`/videos/${id}`, 'Video not found');
 }
 
+async function errorMessage(res: Response, fallback: string) {
+  const body = (await res.json().catch(() => null)) as {
+    message?: string | string[];
+  } | null;
+  const message = body?.message;
+  return Array.isArray(message) ? message.join(', ') : (message ?? fallback);
+}
+
+export async function updateVideo(
+  id: string,
+  data: { title?: string; description?: string },
+): Promise<Video> {
+  const res = await authFetch(`/videos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok)
+    throw new Error(await errorMessage(res, 'Failed to update video'));
+  return res.json() as Promise<Video>;
+}
+
+export async function deleteVideo(id: string): Promise<void> {
+  const res = await authFetch(`/videos/${id}`, { method: 'DELETE' });
+  if (!res.ok)
+    throw new Error(await errorMessage(res, 'Failed to delete video'));
+}
+
 export function streamUrl(id: string): string {
   return `/videos/${id}/stream`;
 }

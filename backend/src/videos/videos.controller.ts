@@ -6,6 +6,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -17,6 +18,7 @@ import { createReadStream } from 'fs';
 import { stat } from 'fs/promises';
 import type { Request, Response } from 'express';
 import { CreateVideoDto } from './dto/create-video.dto';
+import { UpdateVideoDto } from './dto/update-video.dto';
 import { VideosService } from './videos.service';
 import { Roles } from '../auth/roles.decorator';
 import { Public } from '../auth/public.decorator';
@@ -46,6 +48,12 @@ export class VideosController {
       throw new BadRequestException('A video file is required');
     }
     return this.videos.create(file, dto);
+  }
+
+  @Patch(':id')
+  @Roles('admin')
+  update(@Param('id') id: string, @Body() dto: UpdateVideoDto) {
+    return this.videos.update(id, dto);
   }
 
   @Delete(':id')
